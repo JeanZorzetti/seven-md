@@ -1,0 +1,217 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth & Users ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(PATIENT)
+  phone        String?
+  cpf          String?   @unique
+  birthDate    DateTime?
+  gender       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  appointments      Appointment[]
+  subscription      Subscription?
+  reviews           Review[]
+  referralsMade     Referral[]    @relation("ReferralsMade")
+  referralsReceived Referral[]    @relation("ReferralsReceived")
+  orders            Order[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+  PATIENT
+}
+
+// ─── Telemedicina ─────────────────────────────────────────────────────────────
+
+enum SubscriptionPlan {
+  INDIVIDUAL
+  FAMILIAR
+  FAMILIAR_PRO
+  EMPRESARIAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String             @unique
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model Appointment {
+  id         String            @id @default(cuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty  String
+  doctorName String?
+  dateTime   DateTime
+  status     AppointmentStatus @default(SCHEDULED)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  review Review?
+
+  @@index([userId])
+  @@map("appointments")
+}
+
+model Doctor {
+  id          String   @id @default(cuid())
+  name        String
+  specialty   String
+  crm         String   @unique
+  state       String
+  bio         String?
+  rating      Float    @default(5.0)
+  reviewCount Int      @default(0)
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("doctors")
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  rating        Int
+  comment       String?
+  createdAt     DateTime    @default(now())
+
+  @@map("reviews")
+}
+
+model Referral {
+  id         String   @id @default(cuid())
+  referrerId String
+  referrer   User     @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId String?
+  referred   User?    @relation("ReferralsReceived", fields: [referredId], references: [id], onDelete: SetNull)
+  code       String   @unique
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("referrals")
+}
+
+// ─── E-commerce de Aluguel ────────────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  imageUrl    String?
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  name          String
+  description   String
+  categoryId    String
+  category      Category    @relation(fields: [categoryId], references: [id])
+  images        String[]
+  dailyPrice    Decimal     @db.Decimal(10, 2)
+  weeklyPrice   Decimal?    @db.Decimal(10, 2)
+  monthlyPrice  Decimal     @db.Decimal(10, 2)
+  depositAmount Decimal?    @db.Decimal(10, 2)
+  minRentalDays Int         @default(7)
+  stock         Int         @default(1)
+  active        Boolean     @default(true)
+  specs         Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  IN_DELIVERY
+  ACTIVE
+  RETURNED
+  CANCELLED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  status          OrderStatus @default(PENDING_PAYMENT)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  deliveryFee     Decimal     @default(0) @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+  startDate       DateTime
+  endDate         DateTime
+  deliveryAddress Json
+  asaasPaymentId  String?
+  paymentUrl      String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
