@@ -18,6 +18,7 @@ const telemedLinks = [
   { label: 'Como funciona', href: '/como-funciona' },
   { label: 'Especialidades', href: '/especialidades' },
   { label: 'Planos', href: '/planos' },
+  { label: 'Protocolos', href: '/protocolos' },
   { label: 'Para empresas', href: '/empresas' },
 ]
 
