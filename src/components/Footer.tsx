@@ -1,43 +1,76 @@
-const links = ["Privacidade", "Termos", "Suporte", "Agendamentos"];
+import Link from 'next/link'
 
-export default function Footer() {
-  return (
-    <footer
-      className="w-full border-t"
-      style={{
-        backgroundColor: "#f9f2f2",
-        borderColor: "rgba(228,190,186,0.15)",
-      }}
-    >
-      <div className="w-full px-8 py-12 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto space-y-6 md:space-y-0">
-        <div className="flex flex-col items-center md:items-start">
-          <span
-            className="text-xl font-bold tracking-tight mb-2"
-            style={{ fontFamily: "var(--font-manrope)", color: "#1d1b1b" }}
-          >
-            Seven-MD
-          </span>
-          <p
-            className="text-sm leading-relaxed"
-            style={{ fontFamily: "var(--font-inter)", color: "rgba(29,27,27,0.60)" }}
-          >
-            © 2024 Seven-MD Telemedicina. Autoridade Clínica Editorial.
-          </p>
+const Footer = () => (
+  <footer className="border-t border-gray-800 text-white" style={{ backgroundColor: '#1a0608' }}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+
+        {/* Col 1 — Brand */}
+        <div>
+          <div className="mb-4">
+            <Link href="/" className="text-2xl font-black tracking-tighter" style={{ fontFamily: 'var(--font-manrope)', color: '#ffb3ac' }}>
+              Seven-MD
+            </Link>
+          </div>
+          <p className="text-sm text-white/70 leading-relaxed">Aluguel de equipamentos hospitalares e telemedicina. Saúde de qualidade onde você estiver.</p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-          {links.map((link) => (
-            <a
-              key={link}
-              href="#"
-              className="text-sm underline-offset-4 hover:underline transition-colors footer-link"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              {link}
-            </a>
-          ))}
+        {/* Col 2 — Equipamentos */}
+        <div>
+          <h4 className="mb-3 font-semibold text-white">Equipamentos</h4>
+          <div className="flex flex-col gap-2 text-sm text-white/70">
+            <Link href="/equipamentos" className="hover:text-white transition-colors">Todos os equipamentos</Link>
+            <Link href="/equipamentos/categoria/camas-hospitalares" className="hover:text-white transition-colors">Camas Hospitalares</Link>
+            <Link href="/equipamentos/categoria/oxigenoterapia" className="hover:text-white transition-colors">Oxigenoterapia</Link>
+            <Link href="/equipamentos/categoria/mobilidade" className="hover:text-white transition-colors">Mobilidade</Link>
+            <Link href="/equipamentos/categoria/inalacao-aspiracao" className="hover:text-white transition-colors">Inalação e Aspiração</Link>
+          </div>
+        </div>
+
+        {/* Col 3 — Telemedicina */}
+        <div>
+          <h4 className="mb-3 font-semibold text-white">Telemedicina</h4>
+          <div className="flex flex-col gap-2 text-sm text-white/70">
+            <Link href="/especialidades" className="hover:text-white transition-colors">Especialidades</Link>
+            <Link href="/como-funciona" className="hover:text-white transition-colors">Como funciona</Link>
+            <Link href="/planos" className="hover:text-white transition-colors">Planos</Link>
+            <Link href="/empresas" className="hover:text-white transition-colors">Para empresas</Link>
+            <Link href="/plataforma" className="hover:text-white transition-colors">Área do paciente</Link>
+          </div>
+        </div>
+
+        {/* Col 4 — Contato */}
+        <div>
+          <h4 className="mb-3 font-semibold text-white">Contato</h4>
+          <div className="flex flex-col gap-2 text-sm text-white/70">
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              contato@sevenmd.com.br
+            </span>
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Seg–Sex: 8h às 18h
+            </span>
+          </div>
         </div>
       </div>
-    </footer>
-  );
-}
+
+      {/* Bottom bar */}
+      <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/20 pt-6 md:flex-row">
+        <p className="text-sm text-white/60">
+          © {new Date().getFullYear()} Seven-MD Telemedicina. Todos os direitos reservados.
+        </p>
+        <div className="flex gap-4 text-sm text-white/60 items-center">
+          <span className="hover:text-white cursor-pointer transition-colors">Termos de Uso</span>
+          <span className="hover:text-white cursor-pointer transition-colors">Privacidade</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+)
+
+export default Footer
