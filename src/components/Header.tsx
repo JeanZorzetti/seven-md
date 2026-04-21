@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
+import { CartButton } from '@/components/CartDrawer'
 
 const equipamentosLinks = [
   { label: 'Todos os equipamentos', href: '/equipamentos' },
@@ -132,6 +133,7 @@ export default function Header() {
 
         {/* Desktop CTAs */}
         <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <CartButton />
           <Link
             href="/login"
             className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#af101a] hover:text-[#af101a]"
