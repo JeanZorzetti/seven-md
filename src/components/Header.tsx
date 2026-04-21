@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { CartButton } from '@/components/CartDrawer'
@@ -75,12 +76,14 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <span
-            className="text-2xl font-black tracking-tighter"
-            style={{ fontFamily: 'var(--font-manrope)', color: '#af101a' }}
-          >
-            Seven-MD
-          </span>
+          <Image
+            src="/Logos/logo seven md4-01.png"
+            alt="Seven-MD"
+            width={140}
+            height={48}
+            className="h-10 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}

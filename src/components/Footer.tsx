@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 const Footer = () => (
   <footer className="border-t border-gray-800 text-white" style={{ backgroundColor: '#1a0608' }}>
@@ -8,8 +9,14 @@ const Footer = () => (
         {/* Col 1 — Brand */}
         <div>
           <div className="mb-4">
-            <Link href="/" className="text-2xl font-black tracking-tighter" style={{ fontFamily: 'var(--font-manrope)', color: '#ffb3ac' }}>
-              Seven-MD
+            <Link href="/" className="inline-block">
+              <Image
+                src="/Logos/logo seven md4-01.png"
+                alt="Seven-MD"
+                width={130}
+                height={44}
+                className="h-10 w-auto brightness-0 invert"
+              />
             </Link>
           </div>
           <p className="text-sm text-white/70 leading-relaxed">Aluguel de equipamentos hospitalares e telemedicina. Saúde de qualidade onde você estiver.</p>
