@@ -33,9 +33,18 @@ export async function proxy(req: NextRequest) {
     }
   }
 
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    if (!payload) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    if (payload.role === 'PATIENT') {
+      return NextResponse.redirect(new URL('/minha-conta', req.url))
+    }
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/plataforma/:path*', '/minha-conta/:path*'],
+  matcher: ['/plataforma/:path*', '/minha-conta/:path*', '/admin/:path*', '/api/admin/:path*'],
 }

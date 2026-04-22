@@ -36,3 +36,9 @@ export async function getPatientSession() {
   if (!session || session.role !== 'PATIENT') return null
   return session
 }
+
+export async function getAdminSession() {
+  const session = await getSession()
+  if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN')) return null
+  return session
+}
