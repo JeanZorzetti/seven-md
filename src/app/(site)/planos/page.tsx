@@ -49,88 +49,46 @@ const plans = [
   },
 ]
 
-const PLAN_NAME_MAP: Record<string, string> = {
-  individual: 'INDIVIDUAL',
-  familiar: 'FAMILIAR',
-  'familiar-pro': 'FAMILIAR_PRO',
-}
-
-function formatCardNumber(v: string) {
-  return v.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
-}
 function formatCPF(v: string) {
   return v.replace(/\D/g, '').slice(0, 11)
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
+
 function formatPhone(v: string) {
   return v.replace(/\D/g, '').slice(0, 11)
     .replace(/(\d{2})(\d)/, '($1) $2')
     .replace(/(\d{5})(\d)/, '$1-$2')
 }
 
-interface CheckoutForm {
-  name: string; email: string; cpf: string; phone: string
-  postalCode: string; addressNumber: string
-  cardHolder: string; cardNumber: string; expMonth: string; expYear: string; ccv: string
-  paymentMethod: 'CREDIT_CARD' | 'PIX'
-}
-
 export default function PlanosPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
-  const [step, setStep] = useState(1)
-  const [form, setForm] = useState<CheckoutForm>({
-    name: '', email: '', cpf: '', phone: '',
-    postalCode: '', addressNumber: '',
-    cardHolder: '', cardNumber: '', expMonth: '', expYear: '', ccv: '',
-    paymentMethod: 'CREDIT_CARD',
-  })
+  const [form, setForm] = useState({ name: '', email: '', cpf: '', phone: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
   const plan = plans.find((p) => p.id === selectedPlan)
-  const planKey = selectedPlan ? PLAN_NAME_MAP[selectedPlan] : null
-  const planPrice = planKey ? PLAN_PRICES[planKey] : 0
-
-  const set = (field: keyof CheckoutForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
-  }
 
   const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.cpf) {
+      setError('Nome, email e CPF são obrigatórios')
+      return
+    }
     setLoading(true)
     setError('')
     try {
-      const body: Record<string, unknown> = {
-        plan: selectedPlan,
-        name: form.name,
-        email: form.email,
-        cpf: form.cpf,
-        phone: form.phone,
-        postalCode: form.postalCode,
-        addressNumber: form.addressNumber,
-      }
-      if (form.paymentMethod === 'CREDIT_CARD') {
-        body.creditCard = {
-          holderName: form.cardHolder,
-          number: form.cardNumber.replace(/\s/g, ''),
-          expiryMonth: form.expMonth,
-          expiryYear: form.expYear,
-          ccv: form.ccv,
-        }
-      }
       const res = await fetch('/api/checkout/subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ plan: selectedPlan, ...form }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? 'Erro ao processar pagamento')
+        setError(data.error ?? 'Erro ao processar. Tente novamente.')
         return
       }
-      setSuccess(true)
+      window.location.href = data.redirectUrl
     } finally {
       setLoading(false)
     }
@@ -138,10 +96,8 @@ export default function PlanosPage() {
 
   const closeModal = () => {
     setSelectedPlan(null)
-    setStep(1)
     setError('')
-    setSuccess(false)
-    setForm({ name: '', email: '', cpf: '', phone: '', postalCode: '', addressNumber: '', cardHolder: '', cardNumber: '', expMonth: '', expYear: '', ccv: '', paymentMethod: 'CREDIT_CARD' })
+    setForm({ name: '', email: '', cpf: '', phone: '' })
   }
 
   return (
@@ -199,7 +155,7 @@ export default function PlanosPage() {
                   </Link>
                 ) : (
                   <button
-                    onClick={() => { setSelectedPlan(p.id); setStep(1) }}
+                    onClick={() => { setSelectedPlan(p.id); setError('') }}
                     className={`block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                       p.highlighted
                         ? 'text-white hover:opacity-90'
@@ -216,14 +172,15 @@ export default function PlanosPage() {
         </div>
       </section>
 
-      {/* Checkout Modal */}
+      {/* Checkout modal */}
       {selectedPlan && plan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={closeModal}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Contratar {plan.name}</h2>
-                <p className="text-sm text-gray-500">{plan.price}{plan.period}</p>
+                <h2 className="text-lg font-bold text-gray-900">Contratar plano {plan.name}</h2>
+                <p className="text-sm text-gray-500">{plan.price}{plan.period} · cobrança recorrente mensal</p>
               </div>
               <button onClick={closeModal} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,214 +189,69 @@ export default function PlanosPage() {
               </button>
             </div>
 
-            {success ? (
-              <div className="p-8 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Assinatura criada!</h3>
-                <p className="text-gray-500 text-sm">
-                  {form.paymentMethod === 'CREDIT_CARD'
-                    ? 'Seu pagamento está sendo processado. Você receberá uma confirmação por email.'
-                    : 'Sua assinatura foi criada. Efetue o pagamento via PIX para ativar.'}
-                </p>
-                <Link
-                  href="/plataforma"
-                  className="block mt-4 py-3 rounded-xl text-sm font-semibold text-white text-center hover:opacity-90 transition-all"
-                  style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
-                  onClick={closeModal}
-                >
-                  Ir para a plataforma →
-                </Link>
+            {/* Form */}
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-500">Preencha seus dados para prosseguir ao pagamento.</p>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Nome completo *</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="João da Silva"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none"
+                />
               </div>
-            ) : (
-              <div className="p-6 space-y-5">
-                {/* Step indicators */}
-                <div className="flex items-center gap-2 mb-2">
-                  {[1, 2, 3].map((s) => (
-                    <div key={s} className="flex items-center gap-2">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        s < step ? 'bg-green-500 text-white' :
-                        s === step ? 'text-white' : 'bg-gray-100 text-gray-400'
-                      }`} style={s === step ? { backgroundColor: '#af101a' } : {}}>
-                        {s < step ? '✓' : s}
-                      </div>
-                      {s < 3 && <div className={`flex-1 h-0.5 ${s < step ? 'bg-green-500' : 'bg-gray-100'}`} style={{ width: '2rem' }} />}
-                    </div>
-                  ))}
-                  <span className="text-xs text-gray-400 ml-2">
-                    {step === 1 ? 'Seus dados' : step === 2 ? 'Pagamento' : 'Confirmar'}
-                  </span>
-                </div>
 
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
-                )}
-
-                {step === 1 && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Nome completo *</label>
-                      <input value={form.name} onChange={set('name')} placeholder="João da Silva" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Email *</label>
-                      <input type="email" value={form.email} onChange={set('email')} placeholder="joao@email.com" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">CPF *</label>
-                        <input value={form.cpf} onChange={(e) => setForm((p) => ({ ...p, cpf: formatCPF(e.target.value) }))} placeholder="000.000.000-00" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Telefone</label>
-                        <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: formatPhone(e.target.value) }))} placeholder="(11) 99999-9999" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                      </div>
-                    </div>
-                    <button
-                      disabled={!form.name || !form.email || !form.cpf}
-                      onClick={() => setStep(2)}
-                      className="w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-40 hover:opacity-90 transition-all"
-                      style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
-                    >
-                      Continuar →
-                    </button>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="space-y-4">
-                    <div className="flex gap-3">
-                      {(['CREDIT_CARD', 'PIX'] as const).map((method) => (
-                        <button
-                          key={method}
-                          onClick={() => setForm((p) => ({ ...p, paymentMethod: method }))}
-                          className={`flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-colors ${
-                            form.paymentMethod === method ? 'border-[#af101a] text-[#af101a] bg-red-50' : 'border-gray-200 text-gray-500'
-                          }`}
-                        >
-                          {method === 'CREDIT_CARD' ? '💳 Cartão' : '📱 PIX'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {form.paymentMethod === 'CREDIT_CARD' && (
-                      <>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Nome no cartão *</label>
-                          <input value={form.cardHolder} onChange={set('cardHolder')} placeholder="JOAO DA SILVA" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none uppercase" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Número do cartão *</label>
-                          <input value={form.cardNumber} onChange={(e) => setForm((p) => ({ ...p, cardNumber: formatCardNumber(e.target.value) }))} placeholder="0000 0000 0000 0000" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none font-mono" />
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Mês</label>
-                            <select value={form.expMonth} onChange={set('expMonth')} className="w-full rounded-lg border border-gray-200 px-2 py-2.5 text-sm focus:border-[#af101a] focus:outline-none">
-                              <option value="">MM</option>
-                              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((m) => (
-                                <option key={m} value={m}>{m}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Ano</label>
-                            <select value={form.expYear} onChange={set('expYear')} className="w-full rounded-lg border border-gray-200 px-2 py-2.5 text-sm focus:border-[#af101a] focus:outline-none">
-                              <option value="">AAAA</option>
-                              {Array.from({ length: 10 }, (_, i) => String(new Date().getFullYear() + i)).map((y) => (
-                                <option key={y} value={y}>{y}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">CVV</label>
-                            <input value={form.ccv} onChange={(e) => setForm((p) => ({ ...p, ccv: e.target.value.replace(/\D/g, '').slice(0, 4) }))} placeholder="123" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none font-mono" />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">CEP</label>
-                            <input value={form.postalCode} onChange={(e) => setForm((p) => ({ ...p, postalCode: e.target.value.replace(/\D/g, '').slice(0, 8) }))} placeholder="00000000" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Número</label>
-                            <input value={form.addressNumber} onChange={set('addressNumber')} placeholder="123" className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none" />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {form.paymentMethod === 'PIX' && (
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-700">
-                        Um QR Code PIX será gerado após a confirmação. Sua assinatura será ativada assim que o pagamento for identificado.
-                      </div>
-                    )}
-
-                    <div className="flex gap-3">
-                      <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all">
-                        ← Voltar
-                      </button>
-                      <button
-                        onClick={() => setStep(3)}
-                        disabled={form.paymentMethod === 'CREDIT_CARD' && (!form.cardHolder || !form.cardNumber || !form.expMonth || !form.expYear || !form.ccv)}
-                        className="flex-1 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-40 hover:opacity-90 transition-all"
-                        style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
-                      >
-                        Revisar →
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {step === 3 && (
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Plano</span>
-                        <span className="font-semibold text-gray-800">{plan.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Valor</span>
-                        <span className="font-semibold text-gray-800">R$ {planPrice}/mês</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Pagamento</span>
-                        <span className="font-semibold text-gray-800">{form.paymentMethod === 'CREDIT_CARD' ? 'Cartão de crédito' : 'PIX'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Email</span>
-                        <span className="font-semibold text-gray-800 truncate max-w-[180px]">{form.email}</span>
-                      </div>
-                      <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between">
-                        <span className="font-bold text-gray-800">Total mensal</span>
-                        <span className="font-bold" style={{ color: '#af101a' }}>R$ {planPrice},00</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-gray-400 text-center">
-                      Ao confirmar, você concorda com nossos termos de uso. Cancele quando quiser.
-                    </p>
-
-                    <div className="flex gap-3">
-                      <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all">
-                        ← Voltar
-                      </button>
-                      <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="flex-1 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-60 hover:opacity-90 transition-all"
-                        style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
-                      >
-                        {loading ? 'Processando...' : 'Confirmar assinatura'}
-                      </button>
-                    </div>
-                  </div>
-                )}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="joao@email.com"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none"
+                />
               </div>
-            )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">CPF *</label>
+                  <input
+                    value={form.cpf}
+                    onChange={(e) => setForm((p) => ({ ...p, cpf: formatCPF(e.target.value) }))}
+                    placeholder="000.000.000-00"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Telefone</label>
+                  <input
+                    value={form.phone}
+                    onChange={(e) => setForm((p) => ({ ...p, phone: formatPhone(e.target.value) }))}
+                    placeholder="(11) 99999-9999"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-[#af101a] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400">
+                Você será redirecionado para a página de pagamento seguro do Asaas. Aceita PIX, cartão e boleto.
+              </p>
+
+              <button
+                onClick={handleSubmit}
+                disabled={loading || !form.name || !form.email || !form.cpf}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-40 hover:opacity-90 transition-all"
+                style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
+              >
+                {loading ? 'Processando...' : 'Ir para pagamento →'}
+              </button>
+            </div>
           </div>
         </div>
       )}

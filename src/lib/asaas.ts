@@ -95,6 +95,37 @@ export async function cancelPayment(id: string): Promise<void> {
   await asaasRequest('DELETE', `/payments/${id}`)
 }
 
+export interface AsaasPaymentLink {
+  id: string
+  url: string
+  name: string
+  value: number
+}
+
+export async function createPaymentLink(input: {
+  name: string
+  description?: string
+  value: number
+  externalReference?: string
+  redirectUrl?: string
+  splits?: Array<{ walletId: string; percentualValue: number }>
+}): Promise<AsaasPaymentLink> {
+  return asaasRequest<AsaasPaymentLink>('POST', '/paymentLinks', {
+    name: input.name,
+    description: input.description,
+    value: input.value,
+    billingType: 'UNDEFINED',
+    chargeType: 'RECURRENT',
+    subscriptionCycle: 'MONTHLY',
+    dueDateLimitDays: 10,
+    maxInstallmentCount: 1,
+    externalReference: input.externalReference,
+    notificationEnabled: true,
+    ...(input.splits && input.splits.length > 0 ? { splits: input.splits } : {}),
+    ...(input.redirectUrl ? { callback: { successUrl: input.redirectUrl } } : {}),
+  })
+}
+
 export interface AsaasCreditCard {
   holderName: string
   number: string

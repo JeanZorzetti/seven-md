@@ -62,7 +62,13 @@ model Subscription {
   status              SubscriptionStatus @default(ACTIVE)
   startDate           DateTime           @default(now())
   endDate             DateTime?
+  asaasCustomerId     String?
+  asaasPaymentLinkId  String?
+  asaasPaymentLinkUrl String?
   asaasSubscriptionId String?
+  meditelePatientId   String?
+  mediteleLoginUrl    String?
+  mediteleLoginExp    DateTime?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 

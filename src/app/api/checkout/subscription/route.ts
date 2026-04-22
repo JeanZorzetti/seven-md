@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { findOrCreateCustomer, createAsaasSubscription } from '@/lib/asaas'
-import { PLAN_PRICES } from '@/lib/plans'
+import { findOrCreateCustomer, createPaymentLink } from '@/lib/asaas'
+import { PLAN_PRICES, PLAN_LABELS } from '@/lib/plans'
 import { SubscriptionPlan } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
@@ -11,6 +11,8 @@ const PLAN_KEY_MAP: Record<string, string> = {
   'familiar-pro': 'FAMILIAR_PRO',
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dados-seven.vapf51.easypanel.host'
+
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
     plan: string
@@ -18,15 +20,6 @@ export async function POST(req: NextRequest) {
     email: string
     cpf: string
     phone?: string
-    postalCode?: string
-    addressNumber?: string
-    creditCard?: {
-      holderName: string
-      number: string
-      expiryMonth: string
-      expiryYear: string
-      ccv: string
-    }
   }
 
   const planKey = PLAN_KEY_MAP[body.plan]
@@ -43,6 +36,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nome, email e CPF são obrigatórios' }, { status: 400 })
   }
 
+  // Upsert user
   let user = await prisma.user.findUnique({ where: { email: body.email } })
   if (!user) {
     const tempPassword = await bcrypt.hash(Math.random().toString(36), 10)
@@ -58,59 +52,41 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // Create/find Asaas customer
   let asaasCustomer
   try {
     asaasCustomer = await findOrCreateCustomer({
       name: body.name,
       email: body.email,
       cpfCnpj: body.cpf,
-      mobilePhone: body.phone,
+      mobilePhone: body.phone?.replace(/\D/g, ''),
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro ao criar cliente no Asaas'
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
+  // Split 70% ProLife
   const prolifeWalletId = process.env.ASAAS_PROLIFE_WALLET_ID
-  const split = prolifeWalletId ? [{ walletId: prolifeWalletId, percentualValue: 70 }] : undefined
+  const splits = prolifeWalletId ? [{ walletId: prolifeWalletId, percentualValue: 70 }] : undefined
 
-  const nextDueDate = new Date()
-  nextDueDate.setDate(nextDueDate.getDate() + 1)
-  const dueDateStr = nextDueDate.toISOString().split('T')[0]
-
-  const billingType = body.creditCard ? 'CREDIT_CARD' : 'PIX'
-
-  let asaasSubscription
+  // Create recurring payment link
+  let paymentLink
   try {
-    asaasSubscription = await createAsaasSubscription({
-      customer: asaasCustomer.id,
-      billingType,
+    paymentLink = await createPaymentLink({
+      name: `Seven-MD ${PLAN_LABELS[planKey]} — ${body.name}`,
+      description: `Assinatura mensal ${PLAN_LABELS[planKey]} - Seven-MD Telemedicina`,
       value: price,
-      nextDueDate: dueDateStr,
-      cycle: 'MONTHLY',
-      description: `Plano ${planKey} - Seven-MD Telemedicina`,
-      externalReference: user.id,
-      split,
-      ...(body.creditCard && {
-        creditCard: body.creditCard,
-        creditCardHolderInfo: {
-          name: body.name,
-          email: body.email,
-          cpfCnpj: body.cpf.replace(/\D/g, ''),
-          postalCode: body.postalCode ?? '00000000',
-          addressNumber: body.addressNumber ?? 'S/N',
-          phone: body.phone ?? '',
-        },
-      }),
+      externalReference: `${body.plan}:${body.cpf.replace(/\D/g, '')}`,
+      redirectUrl: `${SITE_URL}/planos/sucesso`,
+      splits,
     })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro ao criar assinatura no Asaas'
+    const msg = err instanceof Error ? err.message : 'Erro ao criar link de pagamento'
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  const endDate = new Date()
-  endDate.setMonth(endDate.getMonth() + 1)
-
+  // Upsert subscription as TRIAL (activated by webhook on payment)
   await prisma.subscription.upsert({
     where: { userId: user.id },
     create: {
@@ -118,17 +94,19 @@ export async function POST(req: NextRequest) {
       plan: planKey as SubscriptionPlan,
       status: 'TRIAL',
       startDate: new Date(),
-      endDate,
-      asaasSubscriptionId: asaasSubscription.id,
+      asaasCustomerId: asaasCustomer.id,
+      asaasPaymentLinkId: paymentLink.id,
+      asaasPaymentLinkUrl: paymentLink.url,
     },
     update: {
       plan: planKey as SubscriptionPlan,
       status: 'TRIAL',
       startDate: new Date(),
-      endDate,
-      asaasSubscriptionId: asaasSubscription.id,
+      asaasCustomerId: asaasCustomer.id,
+      asaasPaymentLinkId: paymentLink.id,
+      asaasPaymentLinkUrl: paymentLink.url,
     },
   })
 
-  return NextResponse.json({ ok: true, subscriptionId: asaasSubscription.id })
+  return NextResponse.json({ ok: true, redirectUrl: paymentLink.url })
 }
