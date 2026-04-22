@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server'
 import { COOKIE_NAME } from '@/lib/auth'
 
-export async function POST() {
-  const response = NextResponse.json({ ok: true })
+function clearAndRedirect(to = '/login') {
+  const response = NextResponse.redirect(new URL(to, process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dados-seven.vapf51.easypanel.host'))
   response.cookies.set(COOKIE_NAME, '', { maxAge: 0, path: '/' })
   return response
+}
+
+export async function POST() {
+  return clearAndRedirect()
+}
+
+export async function GET() {
+  return clearAndRedirect()
 }
