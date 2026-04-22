@@ -12,13 +12,15 @@
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@uploadthing/react": "^7.3.3",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.2",
     "next": "16.2.4",
     "pg": "^8.20.0",
     "prisma": "^7.7.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
