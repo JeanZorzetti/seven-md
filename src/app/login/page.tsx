@@ -42,7 +42,8 @@ function LoginForm() {
     const data = await res.json()
 
     if (res.ok) {
-      router.push(data.role === 'PATIENT' ? '/plataforma' : '/')
+      const next = searchParams.get('next')
+      router.push(next ?? '/minha-conta')
     } else {
       setError(data.error ?? 'Erro ao entrar')
     }

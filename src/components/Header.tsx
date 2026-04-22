@@ -29,30 +29,42 @@ const Chevron = ({ className }: { className?: string }) => (
   </svg>
 )
 
+function useSession() {
+  const [user, setUser] = useState<{ email: string; role: string } | null | undefined>(undefined)
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setUser)
+      .catch(() => setUser(null))
+  }, [])
+  return user
+}
+
 export default function Header() {
   const pathname = usePathname()
+  const session = useSession()
+
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileEquipOpen, setMobileEquipOpen] = useState(false)
   const [mobileTelemedOpen, setMobileTelemedOpen] = useState(false)
   const [desktopEquipOpen, setDesktopEquipOpen] = useState(false)
   const [desktopTelemedOpen, setDesktopTelemedOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
 
   const equipRef = useRef<HTMLDivElement>(null)
   const telemedRef = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!desktopEquipOpen && !desktopTelemedOpen) return
+    if (!desktopEquipOpen && !desktopTelemedOpen && !accountOpen) return
     const handler = (e: MouseEvent) => {
-      if (equipRef.current && !equipRef.current.contains(e.target as Node)) {
-        setDesktopEquipOpen(false)
-      }
-      if (telemedRef.current && !telemedRef.current.contains(e.target as Node)) {
-        setDesktopTelemedOpen(false)
-      }
+      if (equipRef.current && !equipRef.current.contains(e.target as Node)) setDesktopEquipOpen(false)
+      if (telemedRef.current && !telemedRef.current.contains(e.target as Node)) setDesktopTelemedOpen(false)
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [desktopEquipOpen, desktopTelemedOpen])
+  }, [desktopEquipOpen, desktopTelemedOpen, accountOpen])
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -94,7 +106,7 @@ export default function Header() {
           {/* Equipamentos dropdown */}
           <div className="relative" ref={equipRef}>
             <button
-              onClick={() => { setDesktopEquipOpen((o) => !o); setDesktopTelemedOpen(false) }}
+              onClick={() => { setDesktopEquipOpen((o) => !o); setDesktopTelemedOpen(false); setAccountOpen(false) }}
               className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-[#af101a] ${equipActive || desktopEquipOpen ? 'text-[#af101a]' : 'text-gray-600'}`}
             >
               Equipamentos
@@ -114,7 +126,7 @@ export default function Header() {
           {/* Telemedicina dropdown */}
           <div className="relative" ref={telemedRef}>
             <button
-              onClick={() => { setDesktopTelemedOpen((o) => !o); setDesktopEquipOpen(false) }}
+              onClick={() => { setDesktopTelemedOpen((o) => !o); setDesktopEquipOpen(false); setAccountOpen(false) }}
               className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-[#af101a] ${telemedActive || desktopTelemedOpen ? 'text-[#af101a]' : 'text-gray-600'}`}
             >
               Telemedicina
@@ -138,12 +150,63 @@ export default function Header() {
         {/* Desktop CTAs */}
         <div className="hidden lg:flex items-center gap-3 shrink-0">
           <CartButton />
-          <Link
-            href="/login"
-            className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#af101a] hover:text-[#af101a]"
-          >
-            Entrar
-          </Link>
+
+          {session ? (
+            /* Logged-in account dropdown */
+            <div className="relative" ref={accountRef}>
+              <button
+                onClick={() => { setAccountOpen((o) => !o); setDesktopEquipOpen(false); setDesktopTelemedOpen(false) }}
+                className="flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#af101a] hover:text-[#af101a]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Minha conta
+                <Chevron className={`h-3 w-3 transition-transform duration-200 ${accountOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {accountOpen && (
+                <div className="absolute right-0 top-full mt-1 min-w-[220px] rounded-lg border border-gray-200 bg-white p-2 shadow-lg z-50">
+                  <div className="px-3 py-2 mb-1 border-b border-gray-100">
+                    <p className="text-xs text-gray-400">Logado como</p>
+                    <p className="text-xs font-semibold text-gray-700 truncate">{session.email}</p>
+                  </div>
+                  <div className="py-1">
+                    <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Equipamentos</p>
+                    <Link href="/minha-conta" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/minha-conta')}>
+                      Painel
+                    </Link>
+                    <Link href="/minha-conta/pedidos" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/minha-conta/pedidos')}>
+                      Meus pedidos
+                    </Link>
+                  </div>
+                  <div className="py-1 border-t border-gray-100">
+                    <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Telemedicina</p>
+                    <Link href="/plataforma" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/plataforma')}>
+                      Área do paciente
+                    </Link>
+                    <Link href="/plataforma/agendar" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/plataforma/agendar')}>
+                      Agendar consulta
+                    </Link>
+                  </div>
+                  <div className="pt-1 border-t border-gray-100">
+                    <form action="/api/auth/logout" method="POST">
+                      <button type="submit" className="w-full text-left rounded-md px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                        Sair
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#af101a] hover:text-[#af101a]"
+            >
+              Entrar
+            </Link>
+          )}
+
           <Link
             href="/equipamentos"
             className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
@@ -207,12 +270,35 @@ export default function Header() {
 
             <Link href="/sobre" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50">Sobre</Link>
             <Link href="/contato" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50">Contato</Link>
+
+            {session && (
+              <>
+                <div className="mt-2 border-t border-gray-100 pt-2">
+                  <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Equipamentos</p>
+                  <Link href="/minha-conta" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Painel</Link>
+                  <Link href="/minha-conta/pedidos" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Meus pedidos</Link>
+                </div>
+                <div className="border-t border-gray-100 pt-2">
+                  <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Telemedicina</p>
+                  <Link href="/plataforma" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Área do paciente</Link>
+                  <Link href="/plataforma/agendar" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Agendar consulta</Link>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="block text-center rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700">
-              Entrar
-            </Link>
+            {session ? (
+              <form action="/api/auth/logout" method="POST">
+                <button type="submit" className="w-full text-center rounded-full border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-500">
+                  Sair
+                </button>
+              </form>
+            ) : (
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="block text-center rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700">
+                Entrar
+              </Link>
+            )}
             <Link
               href="/equipamentos"
               onClick={() => setMobileOpen(false)}
