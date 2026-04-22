@@ -201,6 +201,7 @@ async function registrarVendaProlife(opts: {
         'Authorization': `Bearer ${secret}`,
       },
       body: JSON.stringify({
+        origem: 'seven',
         nome: opts.nome,
         email: opts.email,
         cpf: opts.cpf,
