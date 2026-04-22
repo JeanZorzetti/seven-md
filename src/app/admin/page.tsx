@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { formatCurrency, formatDateTime } from '@/lib/formatting'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_CLASSES } from '@/lib/constants'
+import { PLAN_PRICES } from '@/lib/plans'
 
 export default async function AdminDashboard() {
   const now = new Date()
@@ -14,6 +15,8 @@ export default async function AdminDashboard() {
     newClientsThisMonth,
     recentOrders,
     topProducts,
+    activeSubscriptions,
+    appointmentsThisMonth,
   ] = await Promise.all([
     prisma.user.count({ where: { role: 'PATIENT' } }),
     prisma.order.aggregate({
@@ -40,7 +43,11 @@ export default async function AdminDashboard() {
       orderBy: { _sum: { quantity: 'desc' } },
       take: 5,
     }),
+    prisma.subscription.findMany({ where: { status: 'ACTIVE' }, select: { plan: true } }),
+    prisma.appointment.count({ where: { createdAt: { gte: startOfMonth } } }),
   ])
+
+  const mrr = activeSubscriptions.reduce((sum, s) => sum + (PLAN_PRICES[s.plan] ?? 0), 0)
 
   const topProductIds = topProducts.map((p) => p.productId)
   const topProductNames = topProductIds.length > 0
@@ -93,6 +100,28 @@ export default async function AdminDashboard() {
         </svg>
       ),
     },
+    {
+      label: 'MRR Telemedicina',
+      value: formatCurrency(mrr),
+      sub: `${activeSubscriptions.length} assinante(s) ativo(s)`,
+      color: 'bg-rose-700',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Consultas do Mês',
+      value: appointmentsThisMonth.toString(),
+      sub: 'desde ' + startOfMonth.toLocaleDateString('pt-BR'),
+      color: 'bg-teal-600',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
   ]
 
   return (
@@ -115,7 +144,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-3">
