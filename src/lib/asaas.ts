@@ -90,3 +90,7 @@ export async function createPayment(input: {
 export async function getPayment(id: string): Promise<AsaasPayment> {
   return asaasRequest<AsaasPayment>('GET', `/payments/${id}`)
 }
+
+export async function cancelPayment(id: string): Promise<void> {
+  await asaasRequest('DELETE', `/payments/${id}`)
+}
