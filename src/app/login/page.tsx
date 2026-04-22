@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -54,9 +55,16 @@ function LoginForm() {
 
   return (
     <div className="bg-white rounded-2xl shadow-2xl p-8">
-      <div className="mb-6">
-        <Link href="/" className="text-2xl font-black tracking-tighter" style={{ fontFamily: 'var(--font-manrope)', color: '#af101a' }}>
-          Seven-MD
+      <div className="mb-6 flex justify-center">
+        <Link href="/">
+          <Image
+            src="/Logos/logo seven md4-01.png"
+            alt="Seven-MD"
+            width={160}
+            height={54}
+            className="h-12 w-auto"
+            priority
+          />
         </Link>
       </div>
 
