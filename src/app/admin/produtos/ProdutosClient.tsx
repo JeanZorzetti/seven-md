@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/formatting'
+import TableSkeleton from '@/components/TableSkeleton'
+import { toast } from '@/components/Toast'
 
 interface Category { id: string; name: string }
 interface Product {
@@ -47,11 +49,13 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
 
   const handleArchive = async (id: string, name: string) => {
     if (!confirm(`Arquivar "${name}"?`)) return
-    await fetch(`/api/admin/products/${id}`, {
+    const res = await fetch(`/api/admin/products/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ active: false }),
     })
+    if (res.ok) toast(`"${name}" arquivado`)
+    else toast('Erro ao arquivar produto', 'error')
     load()
   }
 
@@ -88,7 +92,7 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-gray-400">Carregando...</div>
+          <TableSkeleton cols={6} rows={6} />
         ) : products.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-gray-400 mb-3">Nenhum produto encontrado</p>

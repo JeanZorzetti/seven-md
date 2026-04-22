@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ORDER_STATUS_LABELS } from '@/lib/constants'
+import { toast } from '@/components/Toast'
 
 export default function PedidoActions({
   orderId,
@@ -17,7 +18,6 @@ export default function PedidoActions({
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
-  const [msg, setMsg] = useState('')
 
   const advanceStatus = async () => {
     if (!nextStatus || !confirm(`Avançar para "${ORDER_STATUS_LABELS[nextStatus]}"?`)) return
@@ -28,10 +28,11 @@ export default function PedidoActions({
       body: JSON.stringify({ status: nextStatus }),
     })
     if (res.ok) {
+      toast(`Status avançado para ${ORDER_STATUS_LABELS[nextStatus!]}`)
       router.refresh()
     } else {
       const d = await res.json()
-      setMsg(d.error ?? 'Erro ao atualizar status')
+      toast(d.error ?? 'Erro ao atualizar status', 'error')
     }
     setLoading(null)
   }
@@ -45,24 +46,24 @@ export default function PedidoActions({
       body: JSON.stringify({ status: 'CANCELLED' }),
     })
     if (res.ok) {
+      toast('Pedido cancelado')
       router.refresh()
     } else {
       const d = await res.json()
-      setMsg(d.error ?? 'Erro ao cancelar')
+      toast(d.error ?? 'Erro ao cancelar', 'error')
     }
     setLoading(null)
   }
 
   const resendPayment = async () => {
     setLoading('resend')
-    setMsg('')
     const res = await fetch(`/api/admin/orders/${orderId}/resend-payment`, { method: 'POST' })
     const d = await res.json()
     if (res.ok) {
-      setMsg('Novo link gerado!')
+      toast('Novo link de pagamento gerado!')
       router.refresh()
     } else {
-      setMsg(d.error ?? 'Erro ao reenviar')
+      toast(d.error ?? 'Erro ao reenviar', 'error')
     }
     setLoading(null)
   }
@@ -100,11 +101,6 @@ export default function PedidoActions({
         </button>
       )}
 
-      {msg && (
-        <p className={`text-xs px-3 py-2 rounded-lg ${msg.includes('gerado') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-          {msg}
-        </p>
-      )}
     </div>
   )
 }

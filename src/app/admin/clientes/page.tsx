@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { formatCurrency, formatDate, maskCpf } from '@/lib/formatting'
+import TableSkeleton from '@/components/TableSkeleton'
 
 interface Customer {
   id: string
@@ -57,7 +58,7 @@ export default function ClientesPage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-gray-400">Carregando...</div>
+          <TableSkeleton cols={6} rows={6} />
         ) : customers.length === 0 ? (
           <div className="py-16 text-center text-gray-400">Nenhum cliente encontrado</div>
         ) : (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUploadThing } from '@/lib/uploadthing'
+import { toast } from '@/components/Toast'
 
 interface Category { id: string; name: string }
 
@@ -80,9 +81,10 @@ export default function ProdutoForm({
       if (uploaded) {
         const urls = uploaded.map((f) => f.ufsUrl)
         setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }))
+        toast(`${urls.length} imagem(ns) enviada(s)`)
       }
     } catch {
-      setError('Erro ao fazer upload das imagens')
+      toast('Erro ao fazer upload das imagens', 'error')
     }
     setUploadingImages(false)
   }
@@ -114,9 +116,11 @@ export default function ProdutoForm({
     })
 
     if (res.ok) {
+      toast(isEditing ? 'Produto atualizado' : 'Produto criado')
       router.push('/admin/produtos')
     } else {
       const data = await res.json()
+      toast(data.error ?? 'Erro ao salvar', 'error')
       setError(data.error ?? 'Erro ao salvar')
     }
     setLoading(false)
@@ -142,7 +146,10 @@ export default function ProdutoForm({
     })
     if (res.ok) {
       const newProduct = await res.json()
+      toast('Produto duplicado')
       router.push(`/admin/produtos/${newProduct.id}`)
+    } else {
+      toast('Erro ao duplicar produto', 'error')
     }
     setLoading(false)
   }
@@ -150,11 +157,13 @@ export default function ProdutoForm({
   const handleArchive = async () => {
     if (!productId || !confirm('Arquivar este produto?')) return
     setLoading(true)
-    await fetch(`/api/admin/products/${productId}`, {
+    const res = await fetch(`/api/admin/products/${productId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ active: false }),
     })
+    if (res.ok) toast('Produto arquivado')
+    else toast('Erro ao arquivar', 'error')
     router.push('/admin/produtos')
   }
 

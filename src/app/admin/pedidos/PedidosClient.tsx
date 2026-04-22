@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { formatCurrency, formatDateTime } from '@/lib/formatting'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_CLASSES } from '@/lib/constants'
+import TableSkeleton from '@/components/TableSkeleton'
 
 interface Order {
   id: string
@@ -93,7 +94,7 @@ export default function PedidosClient() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-gray-400">Carregando...</div>
+          <TableSkeleton cols={7} rows={6} />
         ) : orders.length === 0 ? (
           <div className="py-16 text-center text-gray-400">Nenhum pedido encontrado</div>
         ) : (

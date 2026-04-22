@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
+import { ToastContainer } from '@/components/Toast'
 
 const navLinks = [
   {
@@ -166,6 +167,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {children}
         </main>
       </div>
+      <ToastContainer />
     </div>
   )
 }

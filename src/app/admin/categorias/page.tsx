@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import TableSkeleton from '@/components/TableSkeleton'
+import { toast } from '@/components/Toast'
 
 interface Category {
   id: string
@@ -60,9 +62,11 @@ function CategoryFormModal({
     })
 
     if (res.ok) {
+      toast(category ? 'Categoria atualizada' : 'Categoria criada')
       onSaved()
     } else {
       const data = await res.json()
+      toast(data.error ?? 'Erro ao salvar', 'error')
       setError(data.error ?? 'Erro ao salvar')
     }
     setLoading(false)
@@ -138,9 +142,11 @@ export default function CategoriasPage() {
     if (!confirm(`Excluir categoria "${cat.name}"?`)) return
     const res = await fetch(`/api/admin/categories/${cat.id}`, { method: 'DELETE' })
     if (res.ok) {
+      toast(`Categoria "${cat.name}" excluída`)
       load()
     } else {
       const data = await res.json()
+      toast(data.error ?? 'Erro ao excluir', 'error')
       setDeleteError(data.error ?? 'Erro ao excluir')
     }
   }
@@ -170,7 +176,7 @@ export default function CategoriasPage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-gray-400">Carregando...</div>
+          <TableSkeleton cols={5} rows={4} />
         ) : categories.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-gray-400 mb-3">Nenhuma categoria cadastrada</p>
