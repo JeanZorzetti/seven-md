@@ -94,3 +94,46 @@ export async function getPayment(id: string): Promise<AsaasPayment> {
 export async function cancelPayment(id: string): Promise<void> {
   await asaasRequest('DELETE', `/payments/${id}`)
 }
+
+export interface AsaasCreditCard {
+  holderName: string
+  number: string
+  expiryMonth: string
+  expiryYear: string
+  ccv: string
+}
+
+export interface AsaasCreditCardHolderInfo {
+  name: string
+  email: string
+  cpfCnpj: string
+  postalCode: string
+  addressNumber: string
+  phone: string
+}
+
+export interface AsaasSubscriptionResult {
+  id: string
+  status: string
+  nextDueDate: string
+  value: number
+}
+
+export async function createAsaasSubscription(input: {
+  customer: string
+  billingType: 'CREDIT_CARD' | 'BOLETO' | 'PIX'
+  value: number
+  nextDueDate: string
+  cycle: 'MONTHLY'
+  description: string
+  externalReference?: string
+  split?: Array<{ walletId: string; percentualValue: number }>
+  creditCard?: AsaasCreditCard
+  creditCardHolderInfo?: AsaasCreditCardHolderInfo
+}): Promise<AsaasSubscriptionResult> {
+  return asaasRequest<AsaasSubscriptionResult>('POST', '/subscriptions', input)
+}
+
+export async function cancelAsaasSubscription(id: string): Promise<void> {
+  await asaasRequest('DELETE', `/subscriptions/${id}`)
+}

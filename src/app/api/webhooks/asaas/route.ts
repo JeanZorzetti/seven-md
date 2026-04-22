@@ -16,10 +16,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await req.json() as { event: string; payment?: { externalReference?: string } }
-  const { event, payment } = body
+  const body = await req.json() as {
+    event: string
+    payment?: { externalReference?: string; subscription?: string }
+    subscription?: { id: string }
+  }
+  const { event, payment, subscription } = body
+
+  // Handle subscription lifecycle events
+  if (event === 'SUBSCRIPTION_DELETED' && subscription?.id) {
+    await prisma.subscription.updateMany({
+      where: { asaasSubscriptionId: subscription.id },
+      data: { status: 'CANCELLED' },
+    })
+    return NextResponse.json({ ok: true })
+  }
 
   if (!payment?.externalReference) {
+    return NextResponse.json({ ok: true })
+  }
+
+  // If payment belongs to a subscription, activate it when received
+  if (payment.subscription && (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED')) {
+    await prisma.subscription.updateMany({
+      where: { asaasSubscriptionId: payment.subscription },
+      data: { status: 'ACTIVE' },
+    })
     return NextResponse.json({ ok: true })
   }
 
