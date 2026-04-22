@@ -72,10 +72,9 @@ export default function HeroSection() {
 
         <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shadow-xl group" style={{ backgroundColor: '#f9f2f2' }}>
           <Image
-            src="https://images.unsplash.com/photo-1519494026892-476f54d43a24?w=900&q=80"
-            alt="Cama hospitalar para cuidados domiciliares"
+            src="/hero-cama-hospitalar.jpg"
+            alt="Cuidador assistindo idoso em casa com equipamentos hospitalares"
             fill
-            unoptimized
             className="object-cover transition-transform duration-700 group-hover:scale-105"
             priority
           />
