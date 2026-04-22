@@ -8,7 +8,7 @@ const plans = [
   {
     id: 'individual',
     name: 'Individual',
-    price: 'R$ 44',
+    price: 'R$ 47',
     period: '/mês',
     subtitle: 'Ideal para uso pessoal.',
     features: ['Clínico geral', 'Mais de 30 especialidades', 'Receitas e atestados digitais', 'Atendimento rápido'],
@@ -18,7 +18,7 @@ const plans = [
   {
     id: 'familiar',
     name: 'Familiar',
-    price: 'R$ 162',
+    price: 'R$ 147',
     period: '/mês',
     subtitle: 'Saúde para toda a família.',
     features: ['Todos os benefícios do Individual', 'Até 4 membros', 'Adultos e crianças', 'Economia vs consultas particulares'],
@@ -28,7 +28,7 @@ const plans = [
   {
     id: 'familiar-pro',
     name: 'Familiar Pro',
-    price: 'R$ 228',
+    price: 'R$ 237',
     period: '/mês',
     subtitle: 'Mais pessoas, mais tranquilidade.',
     features: ['Tudo do Familiar', 'Até 6 membros', 'Melhor custo por pessoa', 'Suporte sempre disponível'],

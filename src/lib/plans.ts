@@ -1,7 +1,7 @@
 export const PLAN_PRICES: Record<string, number> = {
-  INDIVIDUAL: 44,
-  FAMILIAR: 162,
-  FAMILIAR_PRO: 228,
+  INDIVIDUAL: 47,
+  FAMILIAR: 147,
+  FAMILIAR_PRO: 237,
   EMPRESARIAL: 0,
 }
 
