@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { criarPaciente, gerarMagicLink } from '@/lib/meditele'
+import { PLAN_PRICES } from '@/lib/plans'
 
 const MAGIC_LINK_EXPIRES_MINUTES = 60 * 24 * 7 // 7 days
 
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // On activation: provision Meditele patient + generate magic link
+    // On activation: provision Meditele + register sale in prolife-site CRM
     if (newStatus === 'ACTIVE') {
       await provisionarMeditele(found.id, {
         meditelePatientId: found.meditelePatientId,
@@ -87,6 +88,17 @@ export async function POST(req: NextRequest) {
         email: found.user.email,
         cpf: found.user.cpf ?? '',
         phone: found.user.phone ?? undefined,
+      })
+
+      await registrarVendaProlife({
+        nome: found.user.name,
+        email: found.user.email,
+        cpf: found.user.cpf ?? undefined,
+        telefone: found.user.phone ?? undefined,
+        plano: found.plan,
+        valorMensal: PLAN_PRICES[found.plan] ?? 0,
+        asaasCustomerId: found.asaasCustomerId ?? undefined,
+        asaasSubscriptionId: payment.subscription ?? found.asaasSubscriptionId ?? undefined,
       })
     }
 
@@ -160,5 +172,53 @@ async function provisionarMeditele(
     console.log(`[webhook/asaas] Magic link gerado para subscription ${subscriptionId}`)
   } catch (err) {
     console.error(`[webhook/asaas] Meditele falhou para subscription ${subscriptionId}:`, err)
+  }
+}
+
+async function registrarVendaProlife(opts: {
+  nome: string
+  email: string
+  cpf?: string
+  telefone?: string
+  plano: string
+  valorMensal: number
+  asaasCustomerId?: string
+  asaasSubscriptionId?: string
+}) {
+  try {
+    const secret = process.env.INTERNAL_SECRET
+    const prolifeUrl = process.env.PROLIFE_INTERNAL_URL ?? 'https://prolifemed.com.br'
+
+    if (!secret) {
+      console.warn('[webhook/asaas] INTERNAL_SECRET não configurado — venda não registrada no prolife-site')
+      return
+    }
+
+    const res = await fetch(`${prolifeUrl}/api/internal/b2c-venda`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${secret}`,
+      },
+      body: JSON.stringify({
+        nome: opts.nome,
+        email: opts.email,
+        cpf: opts.cpf,
+        telefone: opts.telefone,
+        plano: opts.plano,
+        valor_mensal: opts.valorMensal,
+        asaas_customer_id: opts.asaasCustomerId,
+        asaas_subscription_id: opts.asaasSubscriptionId,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error(`[webhook/asaas] registrarVendaProlife falhou (${res.status}): ${err}`)
+    } else {
+      console.log(`[webhook/asaas] Venda registrada no prolife-site para ${opts.email}`)
+    }
+  } catch (err) {
+    console.error('[webhook/asaas] registrarVendaProlife erro:', err)
   }
 }
