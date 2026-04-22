@@ -33,7 +33,9 @@ export async function getSession() {
 
 export async function getPatientSession() {
   const session = await getSession()
-  if (!session || session.role !== 'PATIENT') return null
+  if (!session) return null
+  // Admins can also access the patient platform
+  if (session.role !== 'PATIENT' && session.role !== 'ADMIN' && session.role !== 'SUPER_ADMIN') return null
   return session
 }
 
