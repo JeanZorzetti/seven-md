@@ -19,11 +19,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sevenmd.com.br'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Seven-MD — Equipamentos Hospitalares & Telemedicina',
+    default: 'Seven-MD — Equipamentos Hospitalares',
     template: '%s | Seven-MD',
   },
-  description: 'Aluguel de equipamentos hospitalares para cuidados domiciliares e telemedicina com especialistas. Entrega em domicílio, suporte 24h.',
-  keywords: ['equipamentos hospitalares', 'locação de equipamentos', 'telemedicina', 'concentrador de oxigênio', 'cama hospitalar', 'cadeira de rodas'],
+  description: 'Aluguel de equipamentos hospitalares para cuidados domiciliares. Entrega em domicílio, suporte 24h.',
+  keywords: ['equipamentos hospitalares', 'locação de equipamentos', 'concentrador de oxigênio', 'cama hospitalar', 'cadeira de rodas'],
   openGraph: {
     siteName: 'Seven-MD',
     locale: 'pt_BR',

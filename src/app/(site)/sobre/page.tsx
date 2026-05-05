@@ -3,14 +3,14 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Sobre | Seven-MD',
-  description: 'Conheça a Seven-MD — referência em aluguel de equipamentos hospitalares e telemedicina.',
+  description: 'Conheça a Seven-MD — referência em aluguel de equipamentos hospitalares para cuidados domiciliares.',
 }
 
 const values = [
   { title: 'Qualidade', desc: 'Equipamentos certificados e manutenção rigorosa para garantir segurança ao paciente.' },
   { title: 'Acessibilidade', desc: 'Soluções de saúde a um custo justo, disponíveis para qualquer pessoa.' },
   { title: 'Confiança', desc: 'Anos de experiência no setor médico-hospitalar e milhares de clientes atendidos.' },
-  { title: 'Inovação', desc: 'Tecnologia de telemedicina integrada ao aluguel para um cuidado completo.' },
+  { title: 'Inovação', desc: 'Tecnologia e logística integradas para garantir o equipamento certo no momento certo.' },
 ]
 
 export default function SobrePage() {
@@ -23,7 +23,7 @@ export default function SobrePage() {
               Sobre a Seven-MD
             </h1>
             <p className="text-lg text-red-100 leading-relaxed">
-              Nascemos para facilitar o acesso à saúde de qualidade em casa — com equipamentos hospitalares de ponta e telemedicina integrada.
+              Nascemos para facilitar o acesso à saúde de qualidade em casa — com equipamentos hospitalares de ponta e suporte especializado.
             </p>
           </div>
         </div>
@@ -37,10 +37,7 @@ export default function SobrePage() {
               A Seven-MD surgiu da necessidade de oferecer ao paciente em cuidados domiciliares uma solução completa: o equipamento hospitalar certo, no momento certo, com suporte médico acessível.
             </p>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Combinamos o aluguel de equipamentos — camas hospitalares, concentradores de oxigênio, cadeiras de rodas e muito mais — com a telemedicina white-label da ProLife, uma das maiores redes de telemedicina do Brasil.
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              O resultado é um cuidado contínuo: do equipamento no domicílio à consulta médica online, sem sair de casa.
+              Oferecemos camas hospitalares, concentradores de oxigênio, cadeiras de rodas e muito mais — com entrega em domicílio, suporte técnico e higienização garantidos.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -57,13 +54,10 @@ export default function SobrePage() {
       <section className="py-16 text-center" style={{ backgroundColor: '#f9f2f2' }}>
         <div className="max-w-xl mx-auto px-4">
           <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'var(--font-manrope)', color: '#1d1b1b' }}>Pronto para cuidar da sua saúde?</h2>
-          <p className="text-gray-500 mb-8 text-sm">Conheça nossos equipamentos disponíveis para aluguel ou agende uma consulta de telemedicina.</p>
+          <p className="text-gray-500 mb-8 text-sm">Conheça nossos equipamentos disponíveis para aluguel.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/equipamentos" className="text-white font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition-all text-sm" style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}>
               Ver equipamentos
-            </Link>
-            <Link href="/planos" className="font-semibold px-6 py-3 rounded-xl border-2 transition-all text-sm hover:bg-red-50" style={{ color: '#af101a', borderColor: '#af101a' }}>
-              Planos de telemedicina
             </Link>
           </div>
         </div>

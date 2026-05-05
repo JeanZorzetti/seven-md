@@ -1,6 +1,9 @@
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AgendarButton } from '@/components/AgendarModal'
+
+export default function ProtocolosPage() { notFound() }
 
 export const metadata: Metadata = {
   title: 'Protocolos Clínicos | Seven-MD',

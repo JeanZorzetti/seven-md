@@ -15,13 +15,13 @@ const equipamentosLinks = [
   { label: 'Cuidados Diários', href: '/equipamentos/categoria/cuidados-diarios' },
 ]
 
-const telemedLinks = [
-  { label: 'Como funciona', href: '/como-funciona' },
-  { label: 'Especialidades', href: '/especialidades' },
-  { label: 'Planos', href: '/planos' },
-  { label: 'Protocolos', href: '/protocolos' },
-  { label: 'Para empresas', href: '/empresas' },
-]
+// const telemedLinks = [
+//   { label: 'Como funciona', href: '/como-funciona' },
+//   { label: 'Especialidades', href: '/especialidades' },
+//   { label: 'Planos', href: '/planos' },
+//   { label: 'Protocolos', href: '/protocolos' },
+//   { label: 'Para empresas', href: '/empresas' },
+// ]
 
 const Chevron = ({ className }: { className?: string }) => (
   <svg className={className ?? 'h-3 w-3'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,25 +46,21 @@ export default function Header() {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileEquipOpen, setMobileEquipOpen] = useState(false)
-  const [mobileTelemedOpen, setMobileTelemedOpen] = useState(false)
   const [desktopEquipOpen, setDesktopEquipOpen] = useState(false)
-  const [desktopTelemedOpen, setDesktopTelemedOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
 
   const equipRef = useRef<HTMLDivElement>(null)
-  const telemedRef = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!desktopEquipOpen && !desktopTelemedOpen && !accountOpen) return
+    if (!desktopEquipOpen && !accountOpen) return
     const handler = (e: MouseEvent) => {
       if (equipRef.current && !equipRef.current.contains(e.target as Node)) setDesktopEquipOpen(false)
-      if (telemedRef.current && !telemedRef.current.contains(e.target as Node)) setDesktopTelemedOpen(false)
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [desktopEquipOpen, desktopTelemedOpen, accountOpen])
+  }, [desktopEquipOpen, accountOpen])
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -80,7 +76,6 @@ export default function Header() {
     }`
 
   const equipActive = equipamentosLinks.some((l) => isActive(l.href))
-  const telemedActive = telemedLinks.some((l) => isActive(l.href))
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -123,26 +118,6 @@ export default function Header() {
             )}
           </div>
 
-          {/* Telemedicina dropdown */}
-          <div className="relative" ref={telemedRef}>
-            <button
-              onClick={() => { setDesktopTelemedOpen((o) => !o); setDesktopEquipOpen(false); setAccountOpen(false) }}
-              className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-[#af101a] ${telemedActive || desktopTelemedOpen ? 'text-[#af101a]' : 'text-gray-600'}`}
-            >
-              Telemedicina
-              <Chevron className={`h-3 w-3 transition-transform duration-200 ${desktopTelemedOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {desktopTelemedOpen && (
-              <div className="absolute left-0 top-full mt-1 min-w-[200px] rounded-lg border border-gray-200 bg-white p-2 shadow-lg z-50">
-                {telemedLinks.map((l) => (
-                  <Link key={l.href} href={l.href} onClick={() => setDesktopTelemedOpen(false)} className={dropdownItemCls(l.href)}>
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
           <Link href="/sobre" className={linkCls('/sobre')}>Sobre</Link>
           <Link href="/contato" className={linkCls('/contato')}>Contato</Link>
         </div>
@@ -177,15 +152,6 @@ export default function Header() {
                     </Link>
                     <Link href="/minha-conta/pedidos" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/minha-conta/pedidos')}>
                       Meus pedidos
-                    </Link>
-                  </div>
-                  <div className="py-1 border-t border-gray-100">
-                    <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Telemedicina</p>
-                    <Link href="/plataforma" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/plataforma')}>
-                      Área do paciente
-                    </Link>
-                    <Link href="/plataforma/agendar" onClick={() => setAccountOpen(false)} className={dropdownItemCls('/plataforma/agendar')}>
-                      Agendar consulta
                     </Link>
                   </div>
                   {(session.role === 'ADMIN' || session.role === 'SUPER_ADMIN') && (
@@ -265,20 +231,6 @@ export default function Header() {
               </Link>
             ))}
 
-            {/* Telemedicina accordion */}
-            <button
-              onClick={() => setMobileTelemedOpen(!mobileTelemedOpen)}
-              className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              Telemedicina
-              <Chevron className={`h-4 w-4 transition-transform ${mobileTelemedOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {mobileTelemedOpen && telemedLinks.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 pl-6 text-sm text-gray-500 hover:bg-gray-50">
-                {l.label}
-              </Link>
-            ))}
-
             <Link href="/sobre" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50">Sobre</Link>
             <Link href="/contato" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50">Contato</Link>
 
@@ -288,11 +240,6 @@ export default function Header() {
                   <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Equipamentos</p>
                   <Link href="/minha-conta" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Painel</Link>
                   <Link href="/minha-conta/pedidos" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Meus pedidos</Link>
-                </div>
-                <div className="border-t border-gray-100 pt-2">
-                  <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400">Telemedicina</p>
-                  <Link href="/plataforma" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Área do paciente</Link>
-                  <Link href="/plataforma/agendar" onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">Agendar consulta</Link>
                 </div>
                 {(session.role === 'ADMIN' || session.role === 'SUPER_ADMIN') && (
                   <div className="border-t border-gray-100 pt-2">

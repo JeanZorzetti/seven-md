@@ -1,5 +1,8 @@
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { AgendarButton } from '@/components/AgendarModal'
+
+export default function ComoFuncionaPage() { notFound() }
 
 export const metadata: Metadata = {
   title: 'Como Funciona | Seven-MD Telemedicina',

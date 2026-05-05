@@ -19,7 +19,7 @@ const Footer = () => (
               />
             </Link>
           </div>
-          <p className="text-sm text-white/70 leading-relaxed">Aluguel de equipamentos hospitalares e telemedicina. Saúde de qualidade onde você estiver.</p>
+          <p className="text-sm text-white/70 leading-relaxed">Aluguel de equipamentos hospitalares para cuidados domiciliares. Saúde de qualidade onde você estiver.</p>
         </div>
 
         {/* Col 2 — Equipamentos */}
@@ -34,15 +34,12 @@ const Footer = () => (
           </div>
         </div>
 
-        {/* Col 3 — Telemedicina */}
+        {/* Col 3 — Institucional */}
         <div>
-          <h4 className="mb-3 font-semibold text-white">Telemedicina</h4>
+          <h4 className="mb-3 font-semibold text-white">Institucional</h4>
           <div className="flex flex-col gap-2 text-sm text-white/70">
-            <Link href="/especialidades" className="hover:text-white transition-colors">Especialidades</Link>
-            <Link href="/como-funciona" className="hover:text-white transition-colors">Como funciona</Link>
-            <Link href="/planos" className="hover:text-white transition-colors">Planos</Link>
-            <Link href="/empresas" className="hover:text-white transition-colors">Para empresas</Link>
-            <Link href="/plataforma" className="hover:text-white transition-colors">Área do paciente</Link>
+            <Link href="/sobre" className="hover:text-white transition-colors">Sobre nós</Link>
+            <Link href="/contato" className="hover:text-white transition-colors">Contato</Link>
           </div>
         </div>
 
@@ -69,7 +66,7 @@ const Footer = () => (
       {/* Bottom bar */}
       <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/20 pt-6 md:flex-row">
         <p className="text-sm text-white/60">
-          © {new Date().getFullYear()} Seven-MD Telemedicina. Todos os direitos reservados.
+          © {new Date().getFullYear()} Seven-MD. Todos os direitos reservados.
         </p>
         <div className="flex gap-4 text-sm text-white/60 items-center">
           <span className="hover:text-white cursor-pointer transition-colors">Termos de Uso</span>

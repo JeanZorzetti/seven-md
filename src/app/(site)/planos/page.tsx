@@ -1,8 +1,11 @@
 'use client'
 
+import { notFound } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 import { PLAN_PRICES } from '@/lib/plans'
+
+export default function PlanosPage() { notFound() }
 
 const plans = [
   {

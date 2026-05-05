@@ -143,30 +143,6 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      {/* Telemedicine strip */}
-      <section className="py-14 px-6" style={{ backgroundColor: '#f9f2f2' }}>
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #af101a, #d32f2f)' }}>
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-            </svg>
-          </div>
-          <div className="flex-1 text-center md:text-left">
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#af101a' }}>Também oferecemos</p>
-            <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-manrope)' }}>
-              Telemedicina Seven-MD
-            </h3>
-            <p className="text-sm text-gray-500">Consultas médicas online 24h com mais de 32 especialidades. Receitas digitais e atestados com validade legal.</p>
-          </div>
-          <Link
-            href="/telemedicina"
-            className="shrink-0 px-6 py-3 rounded-full font-bold text-sm text-white hover:opacity-90 transition-all"
-            style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}
-          >
-            Saiba mais
-          </Link>
-        </div>
-      </section>
     </>
   )
 }
