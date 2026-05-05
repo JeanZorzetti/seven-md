@@ -101,7 +101,7 @@ export default function Header() {
           {/* Equipamentos dropdown */}
           <div className="relative" ref={equipRef}>
             <button
-              onClick={() => { setDesktopEquipOpen((o) => !o); setDesktopTelemedOpen(false); setAccountOpen(false) }}
+              onClick={() => { setDesktopEquipOpen((o) => !o); setAccountOpen(false) }}
               className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-[#af101a] ${equipActive || desktopEquipOpen ? 'text-[#af101a]' : 'text-gray-600'}`}
             >
               Equipamentos
@@ -130,7 +130,7 @@ export default function Header() {
             /* Logged-in account dropdown */
             <div className="relative" ref={accountRef}>
               <button
-                onClick={() => { setAccountOpen((o) => !o); setDesktopEquipOpen(false); setDesktopTelemedOpen(false) }}
+                onClick={() => { setAccountOpen((o) => !o); setDesktopEquipOpen(false) }}
                 className="flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#af101a] hover:text-[#af101a]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
