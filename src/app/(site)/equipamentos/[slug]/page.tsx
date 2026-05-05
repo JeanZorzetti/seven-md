@@ -105,28 +105,35 @@ export default async function ProductPage({ params }: Props) {
             {/* Pricing */}
             <div className="bg-gray-50 rounded-2xl p-5 mb-6 space-y-3">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Valores de locação</p>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center">
-                  <p className="text-xs text-gray-400 mb-1">Por dia</p>
-                  <p className="text-lg font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
-                    R$ {Number(product.dailyPrice).toFixed(2)}
-                  </p>
+              {Number(product.monthlyPrice) === 0 && Number(product.dailyPrice) === 0 ? (
+                <div className="py-2 text-center">
+                  <p className="text-2xl font-black text-gray-500">Sob consulta</p>
+                  <p className="text-xs text-gray-400 mt-1">Entre em contato para obter o valor</p>
                 </div>
-                {product.weeklyPrice && (
-                  <div className="text-center border-x border-gray-200">
-                    <p className="text-xs text-gray-400 mb-1">Por semana</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Por dia</p>
                     <p className="text-lg font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
-                      R$ {Number(product.weeklyPrice).toFixed(2)}
+                      {Number(product.dailyPrice) > 0 ? `R$ ${Number(product.dailyPrice).toFixed(2)}` : '—'}
                     </p>
                   </div>
-                )}
-                <div className="text-center">
-                  <p className="text-xs text-gray-400 mb-1">Por mês</p>
-                  <p className="text-lg font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
-                    R$ {Number(product.monthlyPrice).toFixed(2)}
-                  </p>
+                  {product.weeklyPrice && (
+                    <div className="text-center border-x border-gray-200">
+                      <p className="text-xs text-gray-400 mb-1">Por semana</p>
+                      <p className="text-lg font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
+                        R$ {Number(product.weeklyPrice).toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Por mês</p>
+                    <p className="text-lg font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
+                      {Number(product.monthlyPrice) > 0 ? `R$ ${Number(product.monthlyPrice).toFixed(2)}` : '—'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
               {product.depositAmount && Number(product.depositAmount) > 0 && (
                 <p className="text-xs text-gray-400 pt-2 border-t border-gray-200">
                   Caução: R$ {Number(product.depositAmount).toFixed(2)} (reembolsável na devolução)
@@ -214,7 +221,9 @@ export default async function ProductPage({ params }: Props) {
                   <div className="flex flex-col justify-center min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
                     <p className="text-xs text-gray-400 mt-1">
-                      R$ {Number(p.monthlyPrice).toFixed(0)}<span className="text-gray-300">/mês</span>
+                      {Number(p.monthlyPrice) > 0
+                        ? <><span>R$ {Number(p.monthlyPrice).toFixed(0)}</span><span className="text-gray-300">/mês</span></>
+                        : 'Sob consulta'}
                     </p>
                     <span className="text-xs font-semibold mt-1" style={{ color: '#af101a' }}>Ver detalhes →</span>
                   </div>
