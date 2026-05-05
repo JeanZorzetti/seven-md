@@ -13,6 +13,7 @@ interface ProductFormData {
   description: string
   categoryId: string
   images: string[]
+  unitPrice: string
   dailyPrice: string
   weeklyPrice: string
   monthlyPrice: string
@@ -45,6 +46,7 @@ export default function ProdutoForm({
     description: product?.description ?? '',
     categoryId: product?.categoryId ?? '',
     images: product?.images ?? [],
+    unitPrice: product?.unitPrice ?? '',
     dailyPrice: product?.dailyPrice ?? '',
     weeklyPrice: product?.weeklyPrice ?? '',
     monthlyPrice: product?.monthlyPrice ?? '',
@@ -106,6 +108,7 @@ export default function ProdutoForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
+        unitPrice: form.unitPrice ? parseFloat(form.unitPrice) : null,
         dailyPrice: parseFloat(form.dailyPrice) || 0,
         weeklyPrice: form.weeklyPrice ? parseFloat(form.weeklyPrice) : null,
         monthlyPrice: parseFloat(form.monthlyPrice) || 0,
@@ -136,6 +139,7 @@ export default function ProdutoForm({
         ...form,
         name: form.name + ' (cópia)',
         slug: form.slug + '-copia-' + Date.now().toString(36),
+        unitPrice: form.unitPrice ? parseFloat(form.unitPrice) : null,
         dailyPrice: parseFloat(form.dailyPrice) || 0,
         weeklyPrice: form.weeklyPrice ? parseFloat(form.weeklyPrice) : null,
         monthlyPrice: parseFloat(form.monthlyPrice) || 0,
@@ -167,7 +171,7 @@ export default function ProdutoForm({
     router.push('/admin/produtos')
   }
 
-  const inputCls = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#af101a] focus:outline-none focus:ring-1 focus:ring-[#af101a]/20'
+  const inputCls = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#af101a] focus:outline-none focus:ring-1 focus:ring-[#af101a]/20 invalid:border-red-400 invalid:bg-red-50/40'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -208,11 +212,15 @@ export default function ProdutoForm({
           <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
             <h3 className="font-semibold text-gray-900">Informações básicas</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome <span className="text-red-500">*</span>
+              </label>
               <input type="text" required value={form.name} onChange={set('name')} className={inputCls} placeholder="ex: Cama Hospitalar Fawler Elétrica" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Slug <span className="text-red-500">*</span>
+              </label>
               <input type="text" required value={form.slug} onChange={set('slug')} className={inputCls} />
               <p className="text-xs text-gray-400 mt-1">URL: /equipamentos/{form.slug}</p>
             </div>
@@ -221,7 +229,9 @@ export default function ProdutoForm({
               <textarea rows={4} value={form.description} onChange={set('description')} className={inputCls + ' resize-none'} placeholder="Descrição detalhada do produto" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Categoria *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Categoria <span className="text-red-500">*</span>
+              </label>
               <select required value={form.categoryId} onChange={set('categoryId')} className={inputCls}>
                 <option value="">Selecione...</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -274,21 +284,28 @@ export default function ProdutoForm({
         <div className="space-y-5">
           <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
             <h3 className="font-semibold text-gray-900">Preços</h3>
+            <p className="text-xs text-gray-400">Deixe em 0 para exibir "Sob consulta" no site.</p>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preço mensal (R$) *</label>
-              <input type="number" step="0.01" required value={form.monthlyPrice} onChange={set('monthlyPrice')} className={inputCls} placeholder="0,00" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preço mensal (R$) <span className="text-red-500">*</span>
+              </label>
+              <input type="number" step="0.01" min="0" required value={form.monthlyPrice} onChange={set('monthlyPrice')} className={inputCls} placeholder="0,00" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Preço diário (R$)</label>
-              <input type="number" step="0.01" value={form.dailyPrice} onChange={set('dailyPrice')} className={inputCls} placeholder="0,00" />
+              <input type="number" step="0.01" min="0" value={form.dailyPrice} onChange={set('dailyPrice')} className={inputCls} placeholder="0,00" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Preço semanal (R$)</label>
-              <input type="number" step="0.01" value={form.weeklyPrice} onChange={set('weeklyPrice')} className={inputCls} placeholder="0,00" />
+              <input type="number" step="0.01" min="0" value={form.weeklyPrice} onChange={set('weeklyPrice')} className={inputCls} placeholder="0,00" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Preço unitário (R$)</label>
+              <input type="number" step="0.01" min="0" value={form.unitPrice} onChange={set('unitPrice')} className={inputCls} placeholder="0,00" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Caução (R$)</label>
-              <input type="number" step="0.01" value={form.depositAmount} onChange={set('depositAmount')} className={inputCls} placeholder="0,00" />
+              <input type="number" step="0.01" min="0" value={form.depositAmount} onChange={set('depositAmount')} className={inputCls} placeholder="0,00" />
             </div>
           </div>
 

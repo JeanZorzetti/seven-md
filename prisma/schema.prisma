@@ -164,6 +164,7 @@ model Product {
   categoryId    String
   category      Category    @relation(fields: [categoryId], references: [id])
   images        String[]
+  unitPrice     Decimal?    @db.Decimal(10, 2)
   dailyPrice    Decimal     @db.Decimal(10, 2)
   weeklyPrice   Decimal?    @db.Decimal(10, 2)
   monthlyPrice  Decimal     @db.Decimal(10, 2)

@@ -47,15 +47,28 @@ export function ProductCard({ slug, name, categoryName, images, monthlyPrice, da
         </h3>
 
         <div className="mt-auto">
-          <div className="flex items-baseline gap-1 mb-0.5">
-            <span className="text-2xl font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
-              R$ {monthlyPrice.toFixed(0)}
-            </span>
-            <span className="text-sm text-gray-400">/mês</span>
-          </div>
-          <p className="text-xs text-gray-400 mb-4">
-            ou R$ {dailyPrice.toFixed(2)}/dia · mín. {minRentalDays} dias
-          </p>
+          {monthlyPrice > 0 ? (
+            <>
+              <div className="flex items-baseline gap-1 mb-0.5">
+                <span className="text-2xl font-black" style={{ color: '#af101a', fontFamily: 'var(--font-manrope)' }}>
+                  R$ {monthlyPrice.toFixed(0)}
+                </span>
+                <span className="text-sm text-gray-400">/mês</span>
+              </div>
+              <p className="text-xs text-gray-400 mb-4">
+                {dailyPrice > 0 ? `ou R$ ${dailyPrice.toFixed(2)}/dia · ` : ''}mín. {minRentalDays} dias
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="flex items-baseline gap-1 mb-0.5">
+                <span className="text-xl font-bold text-gray-500" style={{ fontFamily: 'var(--font-manrope)' }}>
+                  Sob consulta
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-4">mín. {minRentalDays} dias</p>
+            </>
+          )}
 
           <span className="block w-full text-center text-sm font-semibold text-white py-2.5 rounded-xl transition-all group-hover:opacity-90"
             style={{ background: 'linear-gradient(to right, #af101a, #d32f2f)' }}>
