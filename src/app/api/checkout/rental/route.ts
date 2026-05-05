@@ -29,11 +29,14 @@ interface CheckoutBody {
     endDate: string
   }
   items: CartItemInput[]
+  deliveryFee?: number
+  freteServico?: string | null
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as CheckoutBody
-  const { form, items } = body
+  const { form, items, deliveryFee: rawDeliveryFee, freteServico } = body
+  const deliveryFee = rawDeliveryFee ?? 0
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 })
@@ -65,13 +68,13 @@ export async function POST(req: NextRequest) {
 
   const subtotal = items.reduce((s, i) => s + i.monthlyPrice * i.quantity, 0)
   const depositTotal = items.reduce((s, i) => s + i.depositAmount * i.quantity, 0)
-  const total = subtotal + depositTotal
+  const total = subtotal + depositTotal + deliveryFee
 
   const order = await prisma.order.create({
     data: {
       userId,
       subtotal,
-      deliveryFee: 0,
+      deliveryFee,
       total,
       startDate: new Date(form.startDate),
       endDate: new Date(form.endDate),
@@ -83,6 +86,7 @@ export async function POST(req: NextRequest) {
         bairro: form.bairro,
         cidade: form.cidade,
         estado: form.estado,
+        ...(freteServico ? { freteServico } : {}),
       },
       items: {
         create: await Promise.all(
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest) {
       billingType: 'UNDEFINED',
       value: total,
       dueDate: dueDateStr,
-      description: `Locação de equipamentos — Pedido #${order.id.slice(-8).toUpperCase()}`,
+      description: `Locação${freteServico ? ` + ${freteServico}` : ''} — Pedido #${order.id.slice(-8).toUpperCase()}`,
       externalReference: order.id,
     })
 

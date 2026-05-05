@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const body = await req.json()
-  const { name, slug, description, categoryId, images, unitPrice, dailyPrice, weeklyPrice, monthlyPrice, depositAmount, minRentalDays, stock, specs } = body
+  const { name, slug, description, categoryId, images, unitPrice, dailyPrice, weeklyPrice, monthlyPrice, depositAmount, weightG, heightCm, widthCm, lengthCm, minRentalDays, stock, specs } = body
 
   if (!name || !slug || !categoryId) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
@@ -57,6 +57,10 @@ export async function POST(req: NextRequest) {
         weeklyPrice: weeklyPrice ?? null,
         monthlyPrice: monthlyPrice ?? 0,
         depositAmount: depositAmount ?? 0,
+        weightG: weightG ?? null,
+        heightCm: heightCm ?? null,
+        widthCm: widthCm ?? null,
+        lengthCm: lengthCm ?? null,
         minRentalDays: minRentalDays ?? 7,
         stock: stock ?? 1,
         specs: specs ? JSON.parse(specs) : null,

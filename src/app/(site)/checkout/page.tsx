@@ -21,6 +21,14 @@ interface DeliveryForm {
   endDate: string
 }
 
+interface FreteOpcao {
+  id: string
+  nome: string
+  empresa: string
+  preco: number
+  prazo: number
+}
+
 const EMPTY: DeliveryForm = {
   name: '', email: '', cpf: '', phone: '',
   cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '',
@@ -35,12 +43,49 @@ function CheckoutForm() {
   const [error, setError] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
 
+  const [freteOpcoes, setFreteOpcoes] = useState<FreteOpcao[]>([])
+  const [freteSelecionado, setFreteSelecionado] = useState<FreteOpcao | null>(null)
+  const [freteLoading, setFreteLoading] = useState(false)
+  const [freteError, setFreteError] = useState('')
+  const [cepCalculado, setCepCalculado] = useState('')
+
   useEffect(() => {
     setItems(getCart())
   }, [])
 
   const set = (field: keyof DeliveryForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
+
+  const calcularFrete = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '')
+    if (cleanCep.length !== 8 || items.length === 0) return
+    if (cleanCep === cepCalculado) return
+
+    setFreteLoading(true)
+    setFreteError('')
+    setFreteOpcoes([])
+    setFreteSelecionado(null)
+
+    try {
+      const res = await fetch('/api/frete/calcular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cep: cleanCep, itemIds: items.map((i) => i.id) }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setFreteError(data.error ?? 'Erro ao calcular frete')
+      } else {
+        setFreteOpcoes(data.opcoes ?? [])
+        setCepCalculado(cleanCep)
+        if (data.opcoes?.length === 1) setFreteSelecionado(data.opcoes[0])
+      }
+    } catch {
+      setFreteError('Não foi possível calcular o frete.')
+    } finally {
+      setFreteLoading(false)
+    }
+  }
 
   const lookupCep = async () => {
     const cep = form.cep.replace(/\D/g, '')
@@ -61,14 +106,21 @@ function CheckoutForm() {
     } finally {
       setCepLoading(false)
     }
+    await calcularFrete(cep)
   }
 
   const subtotal = items.reduce((sum, i) => sum + i.monthlyPrice * i.quantity, 0)
   const deposit = items.reduce((sum, i) => sum + i.depositAmount * i.quantity, 0)
+  const freteValor = freteSelecionado?.preco ?? 0
+  const total = subtotal + deposit + freteValor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) { setError('Carrinho vazio'); return }
+    if (freteOpcoes.length > 0 && !freteSelecionado) {
+      setError('Selecione uma opção de frete para continuar.')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -76,7 +128,12 @@ function CheckoutForm() {
       const res = await fetch('/api/checkout/rental', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form, items }),
+        body: JSON.stringify({
+          form,
+          items,
+          deliveryFee: freteValor,
+          freteServico: freteSelecionado ? `${freteSelecionado.empresa} ${freteSelecionado.nome}` : null,
+        }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Erro ao processar pedido'); return }
@@ -175,6 +232,78 @@ function CheckoutForm() {
           </div>
         </div>
 
+        {/* Frete */}
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
+          <h2 className="font-black text-gray-900 text-lg mb-2" style={{ fontFamily: 'var(--font-manrope)' }}>Opções de entrega</h2>
+
+          {!cepCalculado && !freteLoading && (
+            <p className="text-sm text-gray-400">Preencha o CEP acima para ver as opções de frete.</p>
+          )}
+
+          {freteLoading && (
+            <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+              <svg className="animate-spin h-4 w-4 text-[#af101a]" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+              Calculando frete...
+            </div>
+          )}
+
+          {freteError && (
+            <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{freteError}</p>
+          )}
+
+          {freteOpcoes.length > 0 && (
+            <div className="space-y-2 mt-3">
+              {freteOpcoes.map((opcao) => (
+                <label
+                  key={opcao.id}
+                  className={`flex items-center justify-between gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    freteSelecionado?.id === opcao.id
+                      ? 'border-[#af101a] bg-red-50/40'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="frete"
+                      value={opcao.id}
+                      checked={freteSelecionado?.id === opcao.id}
+                      onChange={() => setFreteSelecionado(opcao)}
+                      className="accent-[#af101a]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{opcao.empresa} {opcao.nome}</p>
+                      <p className="text-xs text-gray-400">Prazo: até {opcao.prazo} dia{opcao.prazo !== 1 ? 's' : ''} úteis</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900 shrink-0">
+                    R$ {opcao.preco.toFixed(2).replace('.', ',')}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+
+          {cepCalculado && freteOpcoes.length === 0 && !freteLoading && !freteError && (
+            <div className="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+              Nenhuma opção de frete disponível para este CEP. Entre em contato pelo WhatsApp para cotação.
+            </div>
+          )}
+
+          {cepCalculado && (
+            <button
+              type="button"
+              onClick={() => { setCepCalculado(''); calcularFrete(form.cep) }}
+              className="mt-3 text-xs text-gray-400 hover:text-[#af101a] transition-colors underline"
+            >
+              Recalcular frete
+            </button>
+          )}
+        </div>
+
         {/* Rental period */}
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
           <h2 className="font-black text-gray-900 text-lg mb-5" style={{ fontFamily: 'var(--font-manrope)' }}>Período de locação</h2>
@@ -215,10 +344,14 @@ function CheckoutForm() {
                 <span>R$ {deposit.toFixed(2)}</span>
               </div>
             )}
+            <div className="flex justify-between text-gray-400 border-t border-gray-100 pt-2">
+              <span>Frete{freteSelecionado ? ` (${freteSelecionado.nome})` : ''}</span>
+              <span>{freteSelecionado ? `R$ ${freteValor.toFixed(2).replace('.', ',')}` : '—'}</span>
+            </div>
           </div>
           <div className="flex justify-between font-bold text-base border-t border-gray-100 pt-4 mb-5">
             <span>Total</span>
-            <span style={{ color: '#af101a' }}>R$ {(subtotal + deposit).toFixed(2)}</span>
+            <span style={{ color: '#af101a' }}>R$ {total.toFixed(2).replace('.', ',')}</span>
           </div>
           <button
             type="submit"

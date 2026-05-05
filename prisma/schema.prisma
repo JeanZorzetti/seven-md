@@ -169,6 +169,10 @@ model Product {
   weeklyPrice   Decimal?    @db.Decimal(10, 2)
   monthlyPrice  Decimal     @db.Decimal(10, 2)
   depositAmount Decimal?    @db.Decimal(10, 2)
+  weightG       Int?
+  heightCm      Int?
+  widthCm       Int?
+  lengthCm      Int?
   minRentalDays Int         @default(7)
   stock         Int         @default(1)
   active        Boolean     @default(true)

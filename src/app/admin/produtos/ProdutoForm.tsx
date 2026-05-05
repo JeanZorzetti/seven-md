@@ -18,6 +18,10 @@ interface ProductFormData {
   weeklyPrice: string
   monthlyPrice: string
   depositAmount: string
+  weightG: string
+  heightCm: string
+  widthCm: string
+  lengthCm: string
   minRentalDays: string
   stock: string
   specs: string
@@ -51,6 +55,10 @@ export default function ProdutoForm({
     weeklyPrice: product?.weeklyPrice ?? '',
     monthlyPrice: product?.monthlyPrice ?? '',
     depositAmount: product?.depositAmount ?? '',
+    weightG: product?.weightG ?? '',
+    heightCm: product?.heightCm ?? '',
+    widthCm: product?.widthCm ?? '',
+    lengthCm: product?.lengthCm ?? '',
     minRentalDays: product?.minRentalDays ?? '7',
     stock: product?.stock ?? '1',
     specs: product?.specs ?? '',
@@ -113,6 +121,10 @@ export default function ProdutoForm({
         weeklyPrice: form.weeklyPrice ? parseFloat(form.weeklyPrice) : null,
         monthlyPrice: parseFloat(form.monthlyPrice) || 0,
         depositAmount: parseFloat(form.depositAmount) || 0,
+        weightG: form.weightG ? parseInt(form.weightG) : null,
+        heightCm: form.heightCm ? parseInt(form.heightCm) : null,
+        widthCm: form.widthCm ? parseInt(form.widthCm) : null,
+        lengthCm: form.lengthCm ? parseInt(form.lengthCm) : null,
         minRentalDays: parseInt(form.minRentalDays) || 7,
         stock: parseInt(form.stock) || 1,
       }),
@@ -144,6 +156,10 @@ export default function ProdutoForm({
         weeklyPrice: form.weeklyPrice ? parseFloat(form.weeklyPrice) : null,
         monthlyPrice: parseFloat(form.monthlyPrice) || 0,
         depositAmount: parseFloat(form.depositAmount) || 0,
+        weightG: form.weightG ? parseInt(form.weightG) : null,
+        heightCm: form.heightCm ? parseInt(form.heightCm) : null,
+        widthCm: form.widthCm ? parseInt(form.widthCm) : null,
+        lengthCm: form.lengthCm ? parseInt(form.lengthCm) : null,
         minRentalDays: parseInt(form.minRentalDays) || 7,
         stock: parseInt(form.stock) || 1,
       }),
@@ -322,6 +338,29 @@ export default function ProdutoForm({
             <div className="flex items-center gap-3 pt-1">
               <input type="checkbox" id="active" checked={form.active} onChange={set('active')} className="w-4 h-4 accent-[#af101a]" />
               <label htmlFor="active" className="text-sm font-medium text-gray-700">Produto ativo (visível no site)</label>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+            <h3 className="font-semibold text-gray-900">Dimensões para frete</h3>
+            <p className="text-xs text-gray-400">Necessário para calcular o frete automaticamente. Ex: CardioMapa ≈ 300g, 15×10×5cm.</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Peso (g)</label>
+              <input type="number" min="1" value={form.weightG} onChange={set('weightG')} className={inputCls} placeholder="ex: 300" />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Altura (cm)</label>
+                <input type="number" min="1" value={form.heightCm} onChange={set('heightCm')} className={inputCls} placeholder="5" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Largura (cm)</label>
+                <input type="number" min="1" value={form.widthCm} onChange={set('widthCm')} className={inputCls} placeholder="10" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Comprimento (cm)</label>
+                <input type="number" min="1" value={form.lengthCm} onChange={set('lengthCm')} className={inputCls} placeholder="15" />
+              </div>
             </div>
           </div>
         </div>
