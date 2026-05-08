@@ -19,6 +19,19 @@ async function getTokenPayload(req: NextRequest) {
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  // Maintenance mode — redirect all public routes, keep admin/api/login/manutencao
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    const allowed =
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/api') ||
+      pathname.startsWith('/login') ||
+      pathname === '/manutencao'
+    if (!allowed) {
+      return NextResponse.redirect(new URL('/manutencao', req.url))
+    }
+  }
+
   const payload = await getTokenPayload(req)
 
   if (pathname.startsWith('/plataforma')) {
@@ -46,5 +59,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/plataforma/:path*', '/minha-conta/:path*', '/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|Logos).*)'],
 }
