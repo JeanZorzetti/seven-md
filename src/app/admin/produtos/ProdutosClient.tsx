@@ -59,6 +59,13 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
     load()
   }
 
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Excluir permanentemente "${name}"? Esta ação não pode ser desfeita.`)) return
+    const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' })
+    if (res.ok) { toast(`"${name}" excluído`); load() }
+    else toast('Erro ao excluir produto', 'error')
+  }
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -128,7 +135,9 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
                     </div>
                   </td>
                   <td className="px-6 py-3 text-gray-500">{p.category.name}</td>
-                  <td className="px-6 py-3 text-right font-semibold text-gray-800">{formatCurrency(Number(p.monthlyPrice))}</td>
+                  <td className="px-6 py-3 text-right font-semibold text-gray-800">
+                    {Number(p.monthlyPrice) > 0 ? formatCurrency(Number(p.monthlyPrice)) : <span className="text-gray-400 font-normal">Sob consulta</span>}
+                  </td>
                   <td className="px-6 py-3 text-center">
                     <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${p.stock > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
                       {p.stock}
@@ -143,10 +152,13 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/admin/produtos/${p.id}`} className="text-xs text-[#af101a] hover:underline font-medium">Editar</Link>
                       {p.active && (
-                        <button onClick={() => handleArchive(p.id, p.name)} className="text-xs text-red-400 hover:text-red-600 hover:underline font-medium">
+                        <button onClick={() => handleArchive(p.id, p.name)} className="text-xs text-gray-400 hover:text-gray-600 hover:underline font-medium">
                           Arquivar
                         </button>
                       )}
+                      <button onClick={() => handleDelete(p.id, p.name)} className="text-xs text-red-400 hover:text-red-600 hover:underline font-medium">
+                        Excluir
+                      </button>
                     </div>
                   </td>
                 </tr>

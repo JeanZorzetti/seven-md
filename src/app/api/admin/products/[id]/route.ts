@@ -44,6 +44,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!session) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { id } = await params
-  await prisma.product.update({ where: { id }, data: { active: false } })
-  return NextResponse.json({ ok: true })
+  try {
+    await prisma.product.delete({ where: { id } })
+    return NextResponse.json({ ok: true })
+  } catch {
+    return NextResponse.json({ error: 'Produto não encontrado ou possui pedidos vinculados' }, { status: 409 })
+  }
 }

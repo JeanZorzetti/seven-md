@@ -187,6 +187,14 @@ export default function ProdutoForm({
     router.push('/admin/produtos')
   }
 
+  const handleDelete = async () => {
+    if (!productId || !confirm(`Excluir permanentemente "${form.name}"? Esta ação não pode ser desfeita.`)) return
+    setLoading(true)
+    const res = await fetch(`/api/admin/products/${productId}`, { method: 'DELETE' })
+    if (res.ok) { toast('Produto excluído'); router.push('/admin/produtos') }
+    else { const d = await res.json(); toast(d.error ?? 'Erro ao excluir', 'error'); setLoading(false) }
+  }
+
   const inputCls = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#af101a] focus:outline-none focus:ring-1 focus:ring-[#af101a]/20 invalid:border-red-400 invalid:bg-red-50/40'
 
   return (
@@ -201,8 +209,11 @@ export default function ProdutoForm({
               <button type="button" onClick={handleDuplicate} disabled={loading} className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60">
                 Duplicar
               </button>
-              <button type="button" onClick={handleArchive} disabled={loading} className="px-4 py-2 rounded-xl border border-red-200 text-sm font-medium text-red-500 hover:bg-red-50 disabled:opacity-60">
+              <button type="button" onClick={handleArchive} disabled={loading} className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-60">
                 Arquivar
+              </button>
+              <button type="button" onClick={handleDelete} disabled={loading} className="px-4 py-2 rounded-xl border border-red-200 text-sm font-medium text-red-500 hover:bg-red-50 disabled:opacity-60">
+                Excluir
               </button>
             </>
           )}
