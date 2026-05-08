@@ -28,13 +28,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (f in body) data[f] = body[f]
   }
   if ('specs' in body) {
-    data.specs = typeof body.specs === 'string' ? JSON.parse(body.specs) : body.specs
+    if (!body.specs || (typeof body.specs === 'string' && body.specs.trim() === '')) {
+      data.specs = null
+    } else {
+      try {
+        data.specs = typeof body.specs === 'string' ? JSON.parse(body.specs) : body.specs
+      } catch {
+        return NextResponse.json({ error: 'Ficha técnica com JSON inválido' }, { status: 400 })
+      }
+    }
   }
 
   try {
     const product = await prisma.product.update({ where: { id }, data })
     return NextResponse.json(product)
-  } catch {
+  } catch (err) {
+    console.error('PATCH product error:', err)
     return NextResponse.json({ error: 'Slug já existe ou produto não encontrado' }, { status: 409 })
   }
 }

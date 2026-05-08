@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
         lengthCm: lengthCm ?? null,
         minRentalDays: minRentalDays ?? 7,
         stock: stock ?? 1,
-        specs: specs ? JSON.parse(specs) : null,
+        specs: specs && specs.trim() ? JSON.parse(specs) : null,
         active: true,
       },
     })
