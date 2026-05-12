@@ -59,6 +59,16 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
     load()
   }
 
+  const handleUnarchive = async (id: string, name: string) => {
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: true }),
+    })
+    if (res.ok) { toast(`"${name}" reativado`); load() }
+    else toast('Erro ao desarquivar produto', 'error')
+  }
+
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Excluir permanentemente "${name}"? Esta ação não pode ser desfeita.`)) return
     const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' })
@@ -151,9 +161,13 @@ export default function ProdutosClient({ categories }: { categories: Category[] 
                   <td className="px-6 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/admin/produtos/${p.id}`} className="text-xs text-[#af101a] hover:underline font-medium">Editar</Link>
-                      {p.active && (
+                      {p.active ? (
                         <button onClick={() => handleArchive(p.id, p.name)} className="text-xs text-gray-400 hover:text-gray-600 hover:underline font-medium">
                           Arquivar
+                        </button>
+                      ) : (
+                        <button onClick={() => handleUnarchive(p.id, p.name)} className="text-xs text-green-600 hover:text-green-800 hover:underline font-medium">
+                          Desarquivar
                         </button>
                       )}
                       <button onClick={() => handleDelete(p.id, p.name)} className="text-xs text-red-400 hover:text-red-600 hover:underline font-medium">
